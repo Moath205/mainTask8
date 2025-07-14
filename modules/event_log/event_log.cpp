@@ -12,6 +12,7 @@
 #include "pc_serial_com.h"
 #include "motion_sensor.h"
 #include "sd_card.h"
+#include "display.h"     
 
 //=====[Declaration of private defines]========================================
 
@@ -89,27 +90,37 @@ void eventLogRead( int index, char* str )
     strcat( str, "\r\n" );
 }
 
-void eventLogWrite( bool currentState, const char* elementName )
+void eventLogWrite(bool currentState, const char* elementName)
 {
-    char eventAndStateStr[EVENT_LOG_NAME_MAX_LENGTH] = "";
-
-    strcat( eventAndStateStr, elementName );
-    if ( currentState ) {
-        strcat( eventAndStateStr, "_ON" );
-    } else {
-        strcat( eventAndStateStr, "_OFF" );
+    if (strcmp(elementName, "GAS_DET") != 0
+     && strcmp(elementName, "OVER_TEMP") != 0) {
+        return;
     }
 
-    arrayOfStoredEvents[eventsIndex].seconds = time(NULL);
-    strcpy( arrayOfStoredEvents[eventsIndex].typeOfEvent, eventAndStateStr );
-    if ( eventsIndex < EVENT_LOG_MAX_STORAGE - 1 ) {
-        eventsIndex++;
-    } else {
-        eventsIndex = 0;
-    }
+    char eventStr[EVENT_LOG_NAME_MAX_LENGTH] = "";
+    strcat(eventStr, elementName);
+    strcat(eventStr, currentState ? "_ON" : "_OFF");
 
-    pcSerialComStringWrite(eventAndStateStr);
-    pcSerialComStringWrite("\r\n");
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    char ts[32];
+    strftime(ts, sizeof(ts), "%Y-%m-%d %H:%M:%S", tm_info);
+    char line[80];
+    int n = snprintf(line, sizeof(line), "%s  %s\r\n", ts, eventStr);
+
+    arrayOfStoredEvents[eventsIndex].seconds     = now;
+    strncpy(arrayOfStoredEvents[eventsIndex].typeOfEvent,
+            eventStr, EVENT_LOG_NAME_MAX_LENGTH);
+    eventsIndex = (eventsIndex + 1) % EVENT_LOG_MAX_STORAGE;
+
+    pcSerialComStringWrite(line);
+
+    displayCharPositionWrite(0, 3);
+    displayStringWrite("                ");  
+    displayCharPositionWrite(0, 3);
+    displayStringWrite(eventStr); 
+
+    sdCardWriteFile("events.txt", line);
 }
 
 bool eventLogSaveToSdCard()

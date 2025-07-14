@@ -197,9 +197,9 @@ static void userInterfaceDisplayReportStateInit()
     displayState = DISPLAY_REPORT_STATE;
     displayRefreshTimeMs = DISPLAY_REFRESH_TIME_REPORT_MS;
 
-    displayModeWrite( DISPLAY_MODE_CHAR );
+    //displayModeWrite( DISPLAY_MODE_CHAR );
 
-    displayClear();
+    //displayClear();
 
     displayCharPositionWrite ( 0,0 );
     displayStringWrite( "Temperature:" );
@@ -237,9 +237,9 @@ static void userInterfaceDisplayAlarmStateInit()
     displayState = DISPLAY_ALARM_STATE;
     displayRefreshTimeMs = DISPLAY_REFRESH_TIME_ALARM_MS;
 
-    displayClear();
+    //displayClear();
 
-    displayModeWrite( DISPLAY_MODE_GRAPHIC );
+    //displayModeWrite( DISPLAY_MODE_GRAPHIC );
 
     displayFireAlarmGraphicSequence = 0;
 }
@@ -249,35 +249,35 @@ static void userInterfaceDisplayAlarmStateUpdate()
     if ( ( gasDetectedRead() ) || ( overTemperatureDetectedRead() ) ) {
         switch( displayFireAlarmGraphicSequence ) {
         case 0:
-            displayBitmapWrite( GLCD_fire_alarm[0] );
+            //displayBitmapWrite( GLCD_fire_alarm[0] );
             displayFireAlarmGraphicSequence++;
             break;
         case 1:
-            displayBitmapWrite( GLCD_fire_alarm[1] );
+            //displayBitmapWrite( GLCD_fire_alarm[1] );
             displayFireAlarmGraphicSequence++;
             break;
         case 2:
-            displayBitmapWrite( GLCD_fire_alarm[2] );
+            //displayBitmapWrite( GLCD_fire_alarm[2] );
             displayFireAlarmGraphicSequence++;
             break;
         case 3:
-            displayBitmapWrite( GLCD_fire_alarm[3] );
+            //displayBitmapWrite( GLCD_fire_alarm[3] );
             displayFireAlarmGraphicSequence = 0;
             break;
         default:
-            displayBitmapWrite( GLCD_ClearScreen );
+            //displayBitmapWrite( GLCD_ClearScreen );
             displayFireAlarmGraphicSequence = 0;
             break;
         }
     } else if ( intruderDetectedRead() ) {
         switch( displayIntruderAlarmGraphicSequence ) {
         case 0:
-            displayBitmapWrite( GLCD_intruder_alarm );
+            //displayBitmapWrite( GLCD_intruder_alarm );
             displayIntruderAlarmGraphicSequence++;
             break;
         case 1:
         default:
-            displayBitmapWrite( GLCD_ClearScreen );
+            //displayBitmapWrite( GLCD_ClearScreen );
             displayIntruderAlarmGraphicSequence = 0;
             break;
         }
@@ -286,7 +286,7 @@ static void userInterfaceDisplayAlarmStateUpdate()
 
 static void userInterfaceDisplayInit()
 {
-    displayInit( DISPLAY_TYPE_GLCD_ST7920, DISPLAY_CONNECTION_SPI );
+    displayInit(  DISPLAY_CONNECTION_I2C_PCF8574_IO_EXPANDER );
     userInterfaceDisplayReportStateInit();
 }
 
@@ -299,7 +299,7 @@ static void userInterfaceDisplayUpdate()
 
         accumulatedDisplayTime = 0;
 
-        switch ( displayState ) {
+        switch ( DISPLAY_REPORT_STATE ) {
         case DISPLAY_REPORT_STATE:
             userInterfaceDisplayReportStateUpdate();
 
